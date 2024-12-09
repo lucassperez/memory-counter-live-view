@@ -15,6 +15,7 @@ defmodule MemoryCounter.Application do
       {Finch, name: MemoryCounter.Finch},
       # Start a worker by calling: MemoryCounter.Worker.start_link(arg)
       # {MemoryCounter.Worker, arg},
+      MemoryCounter.Server,
       # Start to serve requests, typically the last entry
       MemoryCounterWeb.Endpoint
     ]
