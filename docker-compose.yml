@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    environment:
+      PHX_DEV_HOST: 0.0.0.0
+    ports:
+      - 4000:4000
+    volumes:
+      - .:/app

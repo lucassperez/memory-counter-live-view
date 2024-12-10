@@ -1,10 +1,20 @@
+.DEFAULT_GOAL := up
+
 # Start iex server ready to be connected by another iex (distributed erlang mode)
-server-distributed-mode:
+distributed.server:
 	iex --sname memory_counter -S mix phx.server
 
-# Connects to running server
-connect-distributed-mode:
+# Connects to running server in distributed mode (started with distributed.server)
+distributed.connect:
 	iex --sname console --remsh memory_counter@$(shell hostname)
+
+# Start bash inside docker container
+bash:
+	docker compose run --service-ports app bash
+
+# Starts server inside docker container
+up:
+	docker compose up
 
 # Shows this help message
 help:

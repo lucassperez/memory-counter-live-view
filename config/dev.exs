@@ -6,10 +6,30 @@ import Config
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
+
+host = fn ->
+  System.get_env("PHX_DEV_HOST", "127.0.0.1")
+  |> String.split(".")
+  |> Enum.reduce_while([], fn x, acc ->
+    case Integer.parse(x) do
+      {n, _} -> {:cont, [n | acc]}
+      _ -> {:halt, :error}
+    end
+  end)
+  |> case do
+    [a, b, c, d] ->
+      {d, c, b, a}
+
+    _ ->
+      IO.puts("Variable PHX_DEV_HOST has invalid value, using 127.0.0.1 instead")
+      {127, 0, 0, 1}
+  end
+end
+
 config :memory_counter, MemoryCounterWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: 4000],
+  http: [ip: host.(), port: 4000],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
