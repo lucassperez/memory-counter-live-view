@@ -17,30 +17,59 @@ defmodule MemoryCounterWeb.BoardLive do
     ~H"""
     <h1 class="font-bold text-xl">Contadores</h1>
     <hr class="my-4" />
-    <button
-      phx-click="create_counter"
-      class="
-      border-2 border-black rounded-lg
-      py-1 px-2
-      bg-green-100 hover:bg-green-300 active:bg-green-500
-      "
-      type="button"
-    >
-      Criar
-    </button>
-    <button
-      phx-click="reset_counter"
-      class="
-      border-2 border-black rounded-lg
-      py-1 px-2
-      bg-red-100 hover:bg-red-300 active:bg-red-500
-      "
-      type="button"
-    >
-      Resetar
-    </button>
+    <div class="flex items-center justify-between">
+      <div class="flex space-x-2">
+        <button
+          phx-click="create_counter"
+          class="
+          border-2 border-black rounded-lg
+          py-1 px-2
+          bg-green-100 hover:bg-green-300 active:bg-green-500
+          "
+          type="button"
+        >
+          Criar
+        </button>
+        <button
+          phx-click="zero_all"
+          class="
+          border-2 border-black rounded-lg
+          py-1 px-2
+          bg-yellow-100 hover:bg-yellow-300 active:bg-yellow-500
+          "
+          type="button"
+        >
+          Zerar
+        </button>
+        <button
+          phx-click="reset_current_counters"
+          class="
+          border-2 border-black rounded-lg
+          py-1 px-2
+          bg-red-200 hover:bg-red-300 active:bg-red-500
+          "
+          type="button"
+        >
+          Limpar
+        </button>
+      </div>
+      <div class="flex space-x-2">
+        <button
+          phx-click="reset_server_counters"
+          class="
+          border-2 border-black rounded-lg
+          py-1 px-2
+          bg-black hover:bg-gray-700 active:bg-gray-500
+          text-white font-bold
+          "
+          type="button"
+        >
+          Recomeçar
+        </button>
+      </div>
+    </div>
     <div class="grid grid-cols-3">
-      <%= for c <- @counters do %>
+      <%= for c <- Enum.reverse(@counters) do %>
         <div
           class="
           relative
@@ -105,8 +134,18 @@ defmodule MemoryCounterWeb.BoardLive do
     {:noreply, socket}
   end
 
-  def handle_event("reset_counter", _params, socket) do
+  def handle_event("reset_server_counters", _params, socket) do
     Server.reset()
+    {:noreply, socket}
+  end
+
+  def handle_event("reset_current_counters", _params, socket) do
+    Server.delete_all()
+    {:noreply, socket}
+  end
+
+  def handle_event("zero_all", _, socket) do
+    Server.zero_all()
     {:noreply, socket}
   end
 
@@ -125,22 +164,7 @@ defmodule MemoryCounterWeb.BoardLive do
     {:noreply, socket}
   end
 
-  def handle_info({:create, new_state}, socket) do
-    assign_reverse_counters(new_state, socket)
-  end
-
-  def handle_info({:delete, new_state}, socket) do
-    assign_reverse_counters(new_state, socket)
-  end
-
-  def handle_info({:update, new_state}, socket) do
-    assign_reverse_counters(new_state, socket)
-  end
-
-  def handle_info({:reset, new_state}, socket) do
-    assign_reverse_counters(new_state, socket)
-  end
-
-  defp assign_reverse_counters(state, socket),
-    do: {:noreply, assign(socket, %{state | counters: Enum.reverse(state.counters)})}
+  def handle_info({event, new_state}, socket)
+      when event in ~w[create delete update reset zero_all delete_all]a,
+      do: {:noreply, assign(socket, %{new_state | counters: new_state.counters})}
 end

@@ -15,6 +15,8 @@ defmodule MemoryCounter.Server do
   def show, do: GenServer.call(@server_name, :show)
   def create, do: GenServer.call(@server_name, :create)
   def reset, do: GenServer.call(@server_name, :reset)
+  def zero_all, do: GenServer.call(@server_name, :zero_all)
+  def delete_all, do: GenServer.call(@server_name, :delete_all)
 
   def delete(id) when is_binary(id), do: delete(String.to_integer(id))
   def delete(id), do: GenServer.call(@server_name, {:delete, id})
@@ -48,6 +50,18 @@ defmodule MemoryCounter.Server do
   def handle_call(:reset, _from, _state) do
     broadcast_event(:reset, @initial_state)
     {:reply, @initial_state, @initial_state}
+  end
+
+  def handle_call(:zero_all, _from, state) do
+    new_state = %{state | counters: Enum.map(state.counters, fn c -> Map.put(c, :value, 0) end)}
+    broadcast_event(:zero_all, new_state)
+    {:reply, @initial_state, new_state}
+  end
+
+  def handle_call(:delete_all, _from, state) do
+    new_state = %{state | counters: []}
+    broadcast_event(:delete_all, new_state)
+    {:reply, @initial_state, new_state}
   end
 
   def handle_call({:delete, id}, _from, %{counters: counters} = state) do
