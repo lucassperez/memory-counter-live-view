@@ -38,6 +38,9 @@ defmodule MemoryCounter.Server do
     new_id = (last_id || 0) + 1
     new_counter = Counter.new() |> Map.put(:id, new_id)
     new_state = %{state | last_added_id: new_counter.id, counters: [new_counter | counters]}
+
+    broadcast_event(:create, new_state)
+
     {:reply, new_counter, new_state}
   end
 
@@ -45,6 +48,9 @@ defmodule MemoryCounter.Server do
     with to_be_deleted = %Counter{} <- Enum.find(counters, fn c -> c.id == id end),
          new_counters <- Enum.filter(counters, fn c -> c.id != id end) do
       new_state = %{state | counters: new_counters}
+
+      broadcast_event(:delete, new_state)
+
       {:reply, to_be_deleted, new_state}
     else
       nil ->
@@ -55,12 +61,18 @@ defmodule MemoryCounter.Server do
   def handle_call({:increment, id}, _from, %{counters: counters} = state) do
     {updated_counter, new_counters} = change_value(id, counters, +1)
     new_state = %{state | counters: new_counters}
+
+    broadcast_event(:update, new_state)
+
     {:reply, updated_counter, new_state}
   end
 
   def handle_call({:decrement, id}, _from, %{counters: counters} = state) do
     {updated_counter, new_counters} = change_value(id, counters, -1)
     new_state = %{state | counters: new_counters}
+
+    broadcast_event(:update, new_state)
+
     {:reply, updated_counter, new_state}
   end
 
@@ -87,5 +99,9 @@ defmodule MemoryCounter.Server do
 
   defp put_counter_in_list(new_counter, [head | tail]) do
     [head | put_counter_in_list(new_counter, tail)]
+  end
+
+  defp broadcast_event(event, payload) do
+    Phoenix.PubSub.broadcast(MemoryCounter.PubSub, "counters", {event, payload})
   end
 end

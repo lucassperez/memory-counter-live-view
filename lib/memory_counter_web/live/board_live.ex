@@ -4,6 +4,8 @@ defmodule MemoryCounterWeb.BoardLive do
   alias MemoryCounter.Server
 
   def mount(_params, _session, socket) do
+    if connected?(socket), do: Phoenix.PubSub.subscribe(MemoryCounter.PubSub, "counters")
+
     %{counters: counters} = Server.show()
 
     socket = assign(socket, counters: counters)
@@ -89,30 +91,45 @@ defmodule MemoryCounterWeb.BoardLive do
 
   def handle_event("create_counter", _params, socket) do
     Server.create()
-    refresh_server_counters(socket)
+    {:noreply, socket}
+  end
+
+  def handle_event("reset_counter", _params, socket) do
+    Server.reset()
+    {:noreply, socket}
   end
 
   def handle_event("delete_counter", %{"id" => id}, socket) do
     Server.delete(id)
-    refresh_server_counters(socket)
+    {:noreply, socket}
   end
 
   def handle_event("increment_counter", %{"id" => id}, socket) do
     Server.increment(id)
-    refresh_server_counters(socket)
+    {:noreply, socket}
   end
 
   def handle_event("decrement_counter", %{"id" => id}, socket) do
     Server.decrement(id)
-    refresh_server_counters(socket)
+    {:noreply, socket}
   end
 
-  defp refresh_server_counters(socket) do
-    new_counters =
-      Server.show()
-      |> Map.get(:counters)
-      |> Enum.reverse()
-
-    {:noreply, assign(socket, counters: new_counters)}
+  def handle_info({:create, new_state}, socket) do
+    assign_reverse_counters(new_state, socket)
   end
+
+  def handle_info({:delete, new_state}, socket) do
+    assign_reverse_counters(new_state, socket)
+  end
+
+  def handle_info({:update, new_state}, socket) do
+    assign_reverse_counters(new_state, socket)
+  end
+
+  def handle_info({:reset, new_state}, socket) do
+    assign_reverse_counters(new_state, socket)
+  end
+
+  defp assign_reverse_counters(state, socket),
+    do: {:noreply, assign(socket, %{state | counters: Enum.reverse(state.counters)})}
 end
