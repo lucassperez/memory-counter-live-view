@@ -14,6 +14,7 @@ defmodule MemoryCounter.Server do
 
   def show, do: GenServer.call(@server_name, :show)
   def create, do: GenServer.call(@server_name, :create)
+  def reset, do: GenServer.call(@server_name, :reset)
 
   def delete(id) when is_binary(id), do: delete(String.to_integer(id))
   def delete(id), do: GenServer.call(@server_name, {:delete, id})
@@ -42,6 +43,11 @@ defmodule MemoryCounter.Server do
     broadcast_event(:create, new_state)
 
     {:reply, new_counter, new_state}
+  end
+
+  def handle_call(:reset, _from, _state) do
+    broadcast_event(:reset, @initial_state)
+    {:reply, @initial_state, @initial_state}
   end
 
   def handle_call({:delete, id}, _from, %{counters: counters} = state) do

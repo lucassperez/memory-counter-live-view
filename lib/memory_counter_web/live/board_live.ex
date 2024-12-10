@@ -28,6 +28,17 @@ defmodule MemoryCounterWeb.BoardLive do
     >
       Criar
     </button>
+    <button
+      phx-click="reset_counter"
+      class="
+      border-2 border-black rounded-lg
+      py-1 px-2
+      bg-red-100 hover:bg-red-300 active:bg-red-500
+      "
+      type="button"
+    >
+      Resetar
+    </button>
     <div class="grid grid-cols-3">
       <%= for c <- @counters do %>
         <div
