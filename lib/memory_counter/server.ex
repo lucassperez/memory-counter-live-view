@@ -14,8 +14,14 @@ defmodule MemoryCounter.Server do
 
   def show, do: GenServer.call(@server_name, :show)
   def create, do: GenServer.call(@server_name, :create)
+
+  def delete(id) when is_binary(id), do: delete(String.to_integer(id))
   def delete(id), do: GenServer.call(@server_name, {:delete, id})
+
+  def increment(id) when is_binary(id), do: increment(String.to_integer(id))
   def increment(id), do: GenServer.call(@server_name, {:increment, id})
+
+  def decrement(id) when is_binary(id), do: decrement(String.to_integer(id))
   def decrement(id), do: GenServer.call(@server_name, {:decrement, id})
 
   @impl true
@@ -46,14 +52,16 @@ defmodule MemoryCounter.Server do
     end
   end
 
-  def handle_call({:increment, id}, _from, %{counters: counters}) do
+  def handle_call({:increment, id}, _from, %{counters: counters} = state) do
     {updated_counter, new_counters} = change_value(id, counters, +1)
-    {:reply, updated_counter, new_counters}
+    new_state = %{state | counters: new_counters}
+    {:reply, updated_counter, new_state}
   end
 
-  def handle_call({:decrement, id}, _from, %{counters: counters}) do
+  def handle_call({:decrement, id}, _from, %{counters: counters} = state) do
     {updated_counter, new_counters} = change_value(id, counters, -1)
-    {:reply, updated_counter, new_counters}
+    new_state = %{state | counters: new_counters}
+    {:reply, updated_counter, new_state}
   end
 
   defp change_value(id, counters, sum_value) do
