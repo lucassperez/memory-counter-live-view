@@ -10,6 +10,11 @@ such, if the server stops/crashes, the data is lost.
 
 You can also change between english and portuguese by clicking the flags of England or Brazil.
 
+Check an example video showing two separate browsers interacting with the app,
+showcasing the realtime update of the counters' states.
+
+https://github.com/user-attachments/assets/b34fbd10-52e9-4a8b-8f9a-25f3b3575bde
+
 ## Start
 
 You can simply execute `make up` or `docker compose up` to start the server inside a docker container.
