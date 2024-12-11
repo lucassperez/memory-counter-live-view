@@ -3,19 +3,34 @@ defmodule MemoryCounterWeb.BoardLive do
 
   alias MemoryCounter.Server
 
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     if connected?(socket), do: Phoenix.PubSub.subscribe(MemoryCounter.PubSub, "counters")
+
+    locale = params["locale"] || Gettext.get_locale(MemoryCounterWeb.Gettext) || "en"
+    Gettext.put_locale(MemoryCounterWeb.Gettext, locale)
 
     %{counters: counters} = Server.show()
 
-    socket = assign(socket, counters: counters)
+    socket = assign(socket, counters: counters, locale: locale)
 
     {:ok, socket}
   end
 
   def render(assigns) do
     ~H"""
-    <h1 class="font-bold text-xl">Contadores</h1>
+    <div class="flex items-center justify-between">
+      <div class="flex space-x-2"></div>
+      <div class="flex space-x-2">
+        <button phx-click="switch_locale" phx-value-locale="en">
+          &#127988;&#917607;&#917602;&#917605;&#917614;&#917607;&#917631;
+        </button>
+        <button phx-click="switch_locale" phx-value-locale="pt">
+          &#127463;&#127479;
+        </button>
+      </div>
+    </div>
+
+    <h1 class="font-bold text-xl">{gettext("Counters")}</h1>
     <hr class="my-4" />
     <div class="flex items-center justify-between">
       <div class="flex space-x-2">
@@ -28,7 +43,7 @@ defmodule MemoryCounterWeb.BoardLive do
           "
           type="button"
         >
-          Criar
+          {gettext("Create")}
         </button>
         <button
           phx-click="zero_all"
@@ -39,7 +54,7 @@ defmodule MemoryCounterWeb.BoardLive do
           "
           type="button"
         >
-          Zerar
+          {gettext("Zero All")}
         </button>
         <button
           phx-click="reset_current_counters"
@@ -50,7 +65,7 @@ defmodule MemoryCounterWeb.BoardLive do
           "
           type="button"
         >
-          Limpar
+          {gettext("Clean Up")}
         </button>
       </div>
       <div class="flex space-x-2">
@@ -64,7 +79,7 @@ defmodule MemoryCounterWeb.BoardLive do
           "
           type="button"
         >
-          Recomeçar
+          {gettext("Restart")}
         </button>
       </div>
     </div>
@@ -102,7 +117,7 @@ defmodule MemoryCounterWeb.BoardLive do
           >
             &times;
           </button>
-          <h3>Contador #{c.id}</h3>
+          <h3>{gettext("Counter")} #{c.id}</h3>
           <hr class="my-1" />
           <div class="flex justify-between items-center">
             <p>{c.value}</p>
@@ -162,6 +177,11 @@ defmodule MemoryCounterWeb.BoardLive do
   def handle_event("decrement_counter", %{"id" => id}, socket) do
     Server.decrement(id)
     {:noreply, socket}
+  end
+
+  def handle_event("switch_locale", %{"locale" => locale}, socket) do
+    Gettext.put_locale(MemoryCounterWeb.Gettext, locale)
+    {:noreply, redirect(socket, to: "/board?locale=#{locale}")}
   end
 
   def handle_info({event, new_state}, socket)
