@@ -51,6 +51,7 @@ defmodule MemoryCounterWeb do
 
   def live_view do
     quote do
+      use Gettext, backend: MemoryCounterWeb.Gettext
       use Phoenix.LiveView,
         layout: {MemoryCounterWeb.Layouts, :app}
 
@@ -60,6 +61,7 @@ defmodule MemoryCounterWeb do
 
   def live_component do
     quote do
+      use Gettext, backend: MemoryCounterWeb.Gettext
       use Phoenix.LiveComponent
 
       unquote(html_helpers())
@@ -68,6 +70,7 @@ defmodule MemoryCounterWeb do
 
   def html do
     quote do
+      use Gettext, backend: MemoryCounterWeb.Gettext
       use Phoenix.Component
 
       # Import convenience functions from controllers

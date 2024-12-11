@@ -17,7 +17,7 @@ defmodule MemoryCounterWeb.CoreComponents do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
-  import MemoryCounterWeb.Gettext
+  use Gettext, backend: MemoryCounterWeb.Gettext
 
   @doc """
   Renders a modal.

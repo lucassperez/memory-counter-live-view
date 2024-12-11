@@ -8,6 +8,8 @@ by different clients.
 This app does not use any database and the counters are stored in memory. And as
 such, if the server stops/crashes, the data is lost.
 
+You can also change between english and portuguese by clicking the flags of England or Brazil.
+
 ## Start
 
 You can simply execute `make up` or `docker compose up` to start the server inside a docker container.

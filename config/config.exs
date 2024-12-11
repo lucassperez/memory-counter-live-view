@@ -10,6 +10,8 @@ import Config
 config :memory_counter,
   generators: [timestamp_type: :utc_datetime]
 
+config :memory_counter, MemoryCounter.Gettext, locales: ~w(en pt)
+
 # Configures the endpoint
 config :memory_counter, MemoryCounterWeb.Endpoint,
   url: [host: "localhost"],
