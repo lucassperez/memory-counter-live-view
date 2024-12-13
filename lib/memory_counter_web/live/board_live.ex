@@ -87,7 +87,7 @@ defmodule MemoryCounterWeb.BoardLive do
 
   defp counter_cards(assigns) do
     ~H"""
-    <div class="grid grid-cols-3">
+    <div class="grid grid-cols-3 gap-x-4">
       <%= for c <- Enum.reverse(@counters) do %>
         <.counter_card counter={c} />
       <% end %>
@@ -103,7 +103,7 @@ defmodule MemoryCounterWeb.BoardLive do
       class="
           relative
           border-4 border-gray-300 bg-gray-50 hover:bg-[#f4f5f6] rounded-lg
-          p-4 mr-4 mt-2 mb-2
+          p-4 my-2
           "
       id={"counter-#{@counter.id}"}
     >
