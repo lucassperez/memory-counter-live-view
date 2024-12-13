@@ -77,9 +77,31 @@ defmodule MemoryCounterWeb.BoardLive do
     {:noreply, redirect(socket, to: "/board?locale=#{locale}")}
   end
 
+  def handle_event(
+        "reorder_counters",
+        %{"oldIndex" => old_index, "newIndex" => new_index},
+        %{assigns: %{counters: counters}} = socket
+      ) do
+    len = length(counters) - 1
+
+    counters
+    |> reorder_counters(len - old_index, len - new_index)
+    |> Server.set_counters()
+
+    {:noreply, socket}
+  end
+
   def handle_info({event, new_state}, socket)
       when event in ~w[create delete update reset zero_all delete_all]a,
       do: {:noreply, assign(socket, new_state)}
+
+  defp reorder_counters(counters, old_index, new_index) do
+    counter = Enum.at(counters, old_index)
+
+    counters
+    |> List.delete_at(old_index)
+    |> List.insert_at(new_index, counter)
+  end
 
   # Components
 
@@ -87,7 +109,7 @@ defmodule MemoryCounterWeb.BoardLive do
 
   defp counter_cards(assigns) do
     ~H"""
-    <div class="grid grid-cols-3 gap-x-4">
+    <div class="grid grid-cols-3 gap-x-4" id="sortable-counters" phx-hook="SortableCounters">
       <%= for c <- Enum.reverse(@counters) do %>
         <.counter_card counter={c} />
       <% end %>
