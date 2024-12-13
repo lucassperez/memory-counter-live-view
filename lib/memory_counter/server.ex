@@ -27,6 +27,8 @@ defmodule MemoryCounter.Server do
   def decrement(id) when is_binary(id), do: decrement(String.to_integer(id))
   def decrement(id), do: GenServer.call(@server_name, {:decrement, id})
 
+  def set_counters(counters), do: GenServer.call(@server_name, {:set_counters, counters})
+
   @impl true
   def init(_) do
     {:ok, @initial_state}
@@ -94,6 +96,14 @@ defmodule MemoryCounter.Server do
     broadcast_event(:update, new_state)
 
     {:reply, updated_counter, new_state}
+  end
+
+  def handle_call({:set_counters, counters}, _from, state) do
+    new_state = %{state | counters: counters}
+
+    broadcast_event(:update, new_state)
+
+    {:reply, counters, new_state}
   end
 
   defp change_value(id, counters, sum_value) do
